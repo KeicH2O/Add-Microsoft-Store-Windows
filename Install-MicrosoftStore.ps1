@@ -1,11 +1,11 @@
-﻿<#
+<#
 .SYNOPSIS
-    Установка Microsoft Store в Windows 10 / 11 LTSC.
+    Установка (восстановление) Microsoft Store в Windows 10 / 11: LTSC, а также Home / Pro / Education / Enterprise.
 
 .DESCRIPTION
     Способы установки, по порядку (останавливается, когда Store появился):
       1. Регистрация уже имеющихся файлов Store (AppXManifest.xml).
-      2. wsreset.exe -i (только Windows 11 сборки 26100+, например LTSC 2024).
+      2. wsreset.exe -i (Windows 11, сборка 22000+).
       3. Локальная папка с пакетами (-PackagePath).
       4. Кэш ранее скачанных пакетов (%ProgramData%\MicrosoftStore-LTSC-Installer\packages).
       5. Загрузка из сети. Источники (параметр -Source):
@@ -403,6 +403,8 @@ function Register-Existing {
 # =====================================================================
 #                              ОСНОВНОЙ ХОД
 # =====================================================================
+if (Test-StoreInstalled) { Write-Log 'Store уже установлен для текущего пользователя.' 'OK'; Finish }
+
 Write-Log 'Проверка служб, нужных для Store'
 foreach ($name in 'InstallService', 'ClipSVC', 'AppXSvc', 'wuauserv', 'LicenseManager') {
     $svc = Get-Service -Name $name -ErrorAction SilentlyContinue
@@ -413,8 +415,6 @@ foreach ($name in 'InstallService', 'ClipSVC', 'AppXSvc', 'wuauserv', 'LicenseMa
     } catch { Write-Log "Служба ${name}: $($_.Exception.Message)" 'WARN' }
 }
 
-if (Test-StoreInstalled) { Write-Log 'Store уже установлен для текущего пользователя.' 'OK'; Finish }
-
 # --- 1. Регистрация имеющихся файлов ---
 Write-Log 'Способ 1: регистрация существующих файлов Store'
 Register-Existing
@@ -423,8 +423,8 @@ Write-Log 'Файлов Store в системе нет.' 'WARN'
 
 # --- 2. wsreset -i ---
 $wsreset = Join-Path $env:SystemRoot 'System32\wsreset.exe'
-if ($SkipWsreset -or $build -lt 26100 -or -not (Test-Path $wsreset)) {
-    Write-Log 'Способ 2 (wsreset -i) пропущен: нужна Windows 11 сборки 26100+ и wsreset.exe.'
+if ($SkipWsreset -or $build -lt 22000 -or -not (Test-Path $wsreset)) {
+    Write-Log 'Способ 2 (wsreset -i) пропущен: нужна Windows 11 (сборка 22000+) и wsreset.exe.'
 } else {
     Write-Log "Способ 2: wsreset.exe -i (ожидание до $WsresetTimeout с)"
     try {
