@@ -209,4 +209,4 @@ Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq 'Microsoft.Win
 
 ## Лицензия
 
-Укажите здесь выбранную лицензию (например, MIT) и добавьте файл `LICENSE` в репозиторий.
+MIT https://github.com/KeicH2O/Add-Microsoft-Store-Windows/blob/main/LICENSE
